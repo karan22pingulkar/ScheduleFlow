@@ -34,6 +34,9 @@ DEBUG = False
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")
 
+# remove later for prod
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5173', 'http://localhost:5173']
+
 
 # Application definition
 
@@ -183,6 +186,14 @@ CELERY_BEAT_SCHEDULER = "celery.beat.PersistentScheduler"
 UPSTASH_REDIS_URL = config("UPSTASH_REDIS_URL")
 CELERY_BROKER_URL = UPSTASH_REDIS_URL
 CELERY_RESULT_BACKEND = UPSTASH_REDIS_URL
+
+# For rediss:// URLs, specify SSL options
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'ssl_cert_reqs': None  # or use 'required' / 'optional' depending on your setup
+}
+CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS = {
+    'ssl_cert_reqs': None
+}
 
 
 CELERY_BEAT_SCHEDULE = {

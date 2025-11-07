@@ -10,6 +10,15 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 
+def create(self, request, *args, **kwargs):
+    serializer = self.get_serializer(data=request.data)
+    if not serializer.is_valid():
+        print(serializer.errors)  # <-- check what validation failed
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    self.perform_create(serializer)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
