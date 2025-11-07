@@ -3,6 +3,7 @@ import os
 from celery import Celery
 from django.conf import settings
 from decouple import config
+import ssl
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
@@ -19,5 +20,6 @@ CELERY_RESULT_BACKEND = config("UPSTASH_REDIS_URL")
 
 app.conf.broker_url = CELERY_BROKER_URL
 app.conf.result_backend = CELERY_RESULT_BACKEND
-app.conf.broker_use_ssl = {'ssl_cert_reqs': None}  # or 'CERT_REQUIRED'
-app.conf.redis_backend_use_ssl = {'ssl_cert_reqs': None}  # or 'CERT_REQUIRED'
+app.conf.broker_use_ssl = {'ssl_cert_reqs': ssl.CERT_NONE}  # or CERT_REQUIRED
+app.conf.redis_backend_use_ssl = {
+    'ssl_cert_reqs': ssl.CERT_NONE}  # or CERT_REQUIRED
