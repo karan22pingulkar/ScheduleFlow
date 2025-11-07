@@ -206,7 +206,9 @@ CELERY_BEAT_SCHEDULE = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # React (Vite) frontend
     "http://127.0.0.1:5173",
+    "https://schedule-flow-one.vercel.app",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 CLOUDINARY = {
     'cloud_name': config('CLOUDINARY_CLOUD_NAME'),
