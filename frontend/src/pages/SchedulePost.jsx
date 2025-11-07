@@ -162,7 +162,7 @@ export default function SchedulePost() {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                Schedule a Post
+                Schedule a Post 📜
             </motion.h1>
 
             {/* FORM */}
@@ -194,7 +194,7 @@ export default function SchedulePost() {
 
             {/* HEADER */}
             <div className="flex items-center justify-between mt-10 mb-3 max-w-lg mx-auto">
-                <h2 className="text-2xl font-semibold">Scheduled Posts</h2>
+                <h2 className="text-2xl font-semibold">Scheduled Posts </h2>
                 <div className="flex gap-2">
                     <button onClick={fetchScheduled} className="px-3 py-1 bg-gray-700 rounded">🔄 Refresh</button>
                     <button onClick={fetchLogs} className="px-3 py-1 bg-purple-700 rounded">📜 Logs</button>

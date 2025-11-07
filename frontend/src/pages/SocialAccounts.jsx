@@ -76,11 +76,11 @@ export default function SocialAccounts() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 max-w-xl mx-auto space-y-6">
+        <div className="min-h-screen  text-white p-6 max-w-xl mx-auto space-y-6">
             <Toaster position="top-right" />
 
             <motion.h2 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-center">
-                Social Accounts
+                Social Accounts 👨🏻‍⚖️
             </motion.h2>
 
             <motion.form
@@ -91,7 +91,7 @@ export default function SocialAccounts() {
             >
                 <label className="block text-white">Platform</label>
                 <select
-                    className="w-full border rounded p-2 bg-black text-white"
+                    className="w-full border rounded p-2 bg-white text-black"
                     value={platform}
                     onChange={(e) => setPlatform(e.target.value)}
                 >
@@ -105,7 +105,7 @@ export default function SocialAccounts() {
                     <label className="block text-white">Username</label>
                     <input
                         type="text"
-                        className="w-full border rounded p-2 bg-black text-white"
+                        className="w-full border rounded p-2 bg-white text-black"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
@@ -116,7 +116,7 @@ export default function SocialAccounts() {
                     <label className="block text-white">Access Token</label>
                     <input
                         type="text"
-                        className="w-full border rounded p-2 bg-black text-white"
+                        className="w-full border rounded p-2 bg-white text-black"
                         value={accessToken}
                         onChange={(e) => setAccessToken(e.target.value)}
                         required
@@ -128,7 +128,7 @@ export default function SocialAccounts() {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="w-full bg-purple-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                     {loading ? "Saving..." : editId ? "Update Account" : "Add Account"}
                 </motion.button>

@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Welcome from "./pages/Welcome";
 import SchedulePost from "./pages/SchedulePost";
+import Home from "./pages/Home";
 
 
 
@@ -21,6 +22,7 @@ export default function App() {
         {/* <Route path="/" element={<Home />} /> */}
         <Route path="/register" element={<Register />} />   {/* ✅ Register route */}
         <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
 
 
 

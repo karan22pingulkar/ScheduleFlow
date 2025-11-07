@@ -215,22 +215,22 @@ export default function Dashboard() {
             style={{ backgroundImage: "url('YOUR_BACKGROUND_IMAGE_URL_HERE')" }}
         >
             {/* Profile Card */}
-            <motion.div
+            {/* <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 className="bg-white bg-opacity-80 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-md text-center"
-            >
-                <h1 className="text-3xl font-bold mb-2">Welcome, {user?.username} 🎉</h1>
-                <p className="text-gray-700 mb-4">{user?.email}</p>
+            > */}
+            <h1 className="text-3xl font-bold mb-2">🎉Welcome {user?.username} 🎉</h1>
+            <p className="text-gray-700 mb-4">{user?.email}</p>
 
-                <button
-                    onClick={loadPosts}
-                    className="mt-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                    {loadingPosts ? "Loading..." : "Load My Posts"}
-                </button>
-            </motion.div>
+            {/* <button
+                onClick={loadPosts}
+                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+                {loadingPosts ? "Loading..." : "Load My Posts"}
+            </button> */}
+            {/* </motion.div> */}
 
             {/* Search Bar */}
             <div className="mt-6 w-full max-w-xl">
@@ -241,7 +241,15 @@ export default function Dashboard() {
                     placeholder="Search post by ID"
                     className="w-full border rounded p-2 text-black"
                 />
+
+
             </div>
+            <button
+                onClick={loadPosts}
+                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+                {loadingPosts ? "Loading..." : "Load My Posts"}
+            </button>
 
             {/* Posts Section */}
             <motion.div
@@ -250,10 +258,10 @@ export default function Dashboard() {
                 transition={{ delay: 0.3, duration: 0.8 }}
                 className="mt-8 w-full max-w-xl space-y-4"
             >
-                {loadingPosts && <p className="text-center text-gray-700">Fetching posts...</p>}
+                {loadingPosts && <p className="text-center text-white-700">Fetching posts...</p>}
 
                 {!loadingPosts && filteredPosts.length === 0 && (
-                    <p className="text-center text-gray-600 text-lg">No posts found.</p>
+                    <p className="text-center text-white-600 text-lg">No posts found.</p>
                 )}
 
                 {filteredPosts.map((post) => (
