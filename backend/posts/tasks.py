@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.utils import timezone
+from django.db import transaction
 from .models import ScheduledPost, PostLog
 
 
@@ -11,14 +12,16 @@ def publish_scheduled_posts():
 
     for sp in scheduled_posts:
         try:
-            # Simulate publishing
-            sp.status = "success"
-            sp.save()
+            with transaction.atomic():
+                # Mark as published
+                sp.status = "success"
+                sp.save()
 
-            PostLog.objects.create(
-                scheduled_post=sp,
-                message="Post published successfully"
-            )
+                # Create success log
+                PostLog.objects.create(
+                    scheduled_post=sp,
+                    message="Post published successfully"
+                )
         except Exception as e:
             sp.status = "failed"
             sp.save()
