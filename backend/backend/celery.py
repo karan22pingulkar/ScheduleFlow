@@ -21,7 +21,7 @@ app.conf.timezone = settings.TIME_ZONE
 app.conf.enable_utc = False
 
 # --- REDIS / UPSTASH SETTINGS ---
-UPSTASH_REDIS_URL = config("UPSTASH_REDIS_URL")
+UPSTASH_REDIS_URL = config("UPSTASH_REDIS_URL", default="")
 
 app.conf.broker_url = UPSTASH_REDIS_URL
 app.conf.result_backend = UPSTASH_REDIS_URL
