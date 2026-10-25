@@ -1,33 +1,43 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Register from "./pages/Register";   // ✅ Add this line
-import Login from "./pages/Login";         // (If you have one)
+import { Toaster } from "react-hot-toast";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import SocialAccounts from "./pages/SocialAccounts";        // ✅ create this file
+import SocialAccounts from "./pages/SocialAccounts";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Welcome from "./pages/Welcome";
 import SchedulePost from "./pages/SchedulePost";
 import Home from "./pages/Home";
-
-
+import Background from "./components/Background";
 
 export default function App() {
   return (
     <Router>
+      <Background />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "rgba(18, 18, 31, 0.92)",
+            color: "#e5e7eb",
+            border: "1px solid rgba(255,255,255,0.1)",
+            backdropFilter: "blur(12px)",
+            borderRadius: "14px",
+            fontSize: "14px",
+          },
+        }}
+      />
+
       {/* Navbar will always be visible */}
       <Navbar />
 
-
       <Routes>
-        {/* <Route path="/" element={<Home />} /> */}
-        <Route path="/register" element={<Register />} />   {/* ✅ Register route */}
+        <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
 
-
-
-
-        {/*  Protected dashboard route */}
+        {/* Protected routes */}
         <Route
           path="/dashboard"
           element={
@@ -36,7 +46,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        {/* Protected Routes */}
         <Route
           path="/welcome"
           element={
@@ -61,10 +70,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
       </Routes>
     </Router>
   );
 }
-
-

@@ -1,8 +1,27 @@
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 import { useState, useEffect } from "react";
-import toast, { Toaster } from "react-hot-toast";
-import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    CalendarClock,
+    RefreshCw,
+    ScrollText,
+    X,
+    CheckCircle2,
+    Clock3,
+    AlertCircle,
+    Send,
+    Pencil,
+    Trash2,
+    FileText,
+    Link2,
+} from "lucide-react";
+
+const STATUS_STYLE = {
+    completed: { icon: CheckCircle2, cls: "text-emerald-300 bg-emerald-500/10 border-emerald-400/20" },
+    success: { icon: CheckCircle2, cls: "text-emerald-300 bg-emerald-500/10 border-emerald-400/20" },
+    pending: { icon: Clock3, cls: "text-amber-300 bg-amber-500/10 border-amber-400/20" },
+    failed: { icon: AlertCircle, cls: "text-red-300 bg-red-500/10 border-red-400/20" },
+};
 
 export default function SchedulePost() {
     const [posts, setPosts] = useState([]);
@@ -15,7 +34,6 @@ export default function SchedulePost() {
     const [selectedAccount, setSelectedAccount] = useState("");
     const [scheduleTime, setScheduleTime] = useState("");
 
-    // EDIT STATES
     const [editId, setEditId] = useState(null);
     const [editTime, setEditTime] = useState("");
 
@@ -25,6 +43,7 @@ export default function SchedulePost() {
     useEffect(() => {
         fetchData();
         fetchScheduled();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchData = async () => {
@@ -90,7 +109,7 @@ export default function SchedulePost() {
 
             if (!res.ok) throw new Error();
 
-            toast.success("✅ Post Scheduled!");
+            toast.success("Post scheduled!");
             setSelectedPost("");
             setSelectedAccount("");
             setScheduleTime("");
@@ -100,19 +119,16 @@ export default function SchedulePost() {
         }
     };
 
-    // OPEN EDIT MODAL
     const openEdit = (item) => {
         setEditId(item.id);
         setEditTime(item.scheduled_time.slice(0, 16));
     };
 
-    // CANCEL EDIT
     const cancelEdit = () => {
         setEditId(null);
         setEditTime("");
     };
 
-    // SAVE UPDATED TIME (PUT FULL DATA — OLD WORKING WAY)
     const saveEdit = async () => {
         if (!editTime) return toast.error("Select a valid time");
 
@@ -132,7 +148,7 @@ export default function SchedulePost() {
                 }),
             });
 
-            toast.success("✅ Rescheduled!");
+            toast.success("Rescheduled!");
             cancelEdit();
             fetchScheduled();
         } catch {
@@ -140,14 +156,13 @@ export default function SchedulePost() {
         }
     };
 
-    // DELETE
     const handleDelete = async (id) => {
         try {
             await fetch(`${BASE_URL}/posts/schedule/${id}/`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
-            toast.success("🗑️ Deleted!");
+            toast.success("Deleted!");
             fetchScheduled();
         } catch {
             toast.error("Delete failed.");
@@ -155,116 +170,252 @@ export default function SchedulePost() {
     };
 
     return (
-        <div className="text-white min-h-screen p-8">
-            <Toaster position="top-right" />
+        <div className="min-h-screen px-6 pt-28 pb-20">
+            <div className="mx-auto max-w-2xl">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-center"
+                >
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-glow-sm">
+                        <CalendarClock size={26} className="text-white" />
+                    </div>
+                    <h1 className="font-display text-3xl font-bold text-white">Schedule a Post</h1>
+                    <p className="mt-2 text-sm text-gray-400">
+                        Pick a post, choose an account, set the time — we handle the rest.
+                    </p>
+                </motion.div>
 
-            <motion.h1 className="text-3xl font-bold mb-6 text-center"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                Schedule a Post 📜
-            </motion.h1>
+                {/* ---------- FORM ---------- */}
+                <motion.form
+                    onSubmit={handleSchedule}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="glass mt-8 space-y-4 rounded-3xl p-6"
+                >
+                    <label className="block">
+                        <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">
+                            <FileText size={13} /> Post
+                        </span>
+                        <select
+                            value={selectedPost}
+                            onChange={(e) => setSelectedPost(e.target.value)}
+                            className="input-dark"
+                        >
+                            <option value="">Select a post</option>
+                            {posts.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.caption?.slice(0, 50) || `Post #${p.id}`}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
 
-            {/* FORM */}
-            <motion.form onSubmit={handleSchedule} className="space-y-4 max-w-lg bg-gray-900 p-6 rounded-lg shadow-lg mx-auto">
-                <select value={selectedPost} onChange={(e) => setSelectedPost(e.target.value)} className="w-full p-2 rounded bg-white text-black">
-                    <option value="">Select Post</option>
-                    {posts.map((p) => (
-                        <option key={p.id} value={p.id}>
-                            {p.caption?.slice(0, 40) || `Post #${p.id}`}
-                        </option>
-                    ))}
-                </select>
+                    <label className="block">
+                        <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">
+                            <Link2 size={13} /> Social account
+                        </span>
+                        <select
+                            value={selectedAccount}
+                            onChange={(e) => setSelectedAccount(e.target.value)}
+                            className="input-dark"
+                        >
+                            <option value="">Select a social account</option>
+                            {accounts.map((acc) => (
+                                <option key={acc.id} value={acc.id}>
+                                    {acc.username} — {acc.platform}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
 
-                <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)} className="w-full p-2 rounded bg-white text-black">
-                    <option value="">Select Social Account</option>
-                    {accounts.map((acc) => (
-                        <option key={acc.id} value={acc.id}>
-                            {acc.username} — {acc.platform}
-                        </option>
-                    ))}
-                </select>
+                    <label className="block">
+                        <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">
+                            <Clock3 size={13} /> Publish time
+                        </span>
+                        <input
+                            type="datetime-local"
+                            value={scheduleTime}
+                            onChange={(e) => setScheduleTime(e.target.value)}
+                            className="input-dark [color-scheme:dark]"
+                        />
+                    </label>
 
-                <input type="datetime-local" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="w-full p-2 rounded bg-white text-black" />
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        className="btn-gradient w-full"
+                    >
+                        <Send size={16} /> Schedule
+                    </motion.button>
+                </motion.form>
 
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded">
-                    Schedule
-                </button>
-            </motion.form>
+                {/* ---------- LIST ---------- */}
+                <div className="mt-10 flex items-center justify-between">
+                    <h2 className="font-display text-xl font-semibold text-white">Scheduled Posts</h2>
+                    <div className="flex gap-2">
+                        <button onClick={fetchScheduled} className="btn-ghost !px-3 !py-1.5 text-xs">
+                            <RefreshCw size={13} /> Refresh
+                        </button>
+                        <button onClick={fetchLogs} className="btn-ghost !px-3 !py-1.5 text-xs">
+                            <ScrollText size={13} /> Logs
+                        </button>
+                    </div>
+                </div>
 
-            {/* HEADER */}
-            <div className="flex items-center justify-between mt-10 mb-3 max-w-lg mx-auto">
-                <h2 className="text-2xl font-semibold">Scheduled Posts </h2>
-                <div className="flex gap-2">
-                    <button onClick={fetchScheduled} className="px-3 py-1 bg-gray-700 rounded">🔄 Refresh</button>
-                    <button onClick={fetchLogs} className="px-3 py-1 bg-purple-700 rounded">📜 Logs</button>
+                <div className="mt-4 space-y-3">
+                    {scheduled.length === 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="glass rounded-3xl py-12 text-center text-gray-400"
+                        >
+                            <CalendarClock size={32} className="mx-auto mb-3 text-gray-600" />
+                            No scheduled posts yet.
+                        </motion.div>
+                    )}
+
+                    <AnimatePresence>
+                        {scheduled.map((item, i) => {
+                            const st = STATUS_STYLE[item.status] || STATUS_STYLE.pending;
+                            return (
+                                <motion.div
+                                    key={item.id}
+                                    layout
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    transition={{ duration: 0.35, delay: Math.min(i * 0.05, 0.3) }}
+                                    className="glass flex items-center justify-between gap-4 rounded-2xl px-5 py-4"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate font-medium text-gray-100">
+                                            {item.post_caption}
+                                        </p>
+                                        <span
+                                            className={`mt-1.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${st.cls}`}
+                                        >
+                                            <st.icon size={11} />
+                                            {item.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="shrink-0 text-right">
+                                        <p className="text-xs text-gray-400">
+                                            {new Date(item.scheduled_time).toLocaleString()}
+                                        </p>
+                                        <div className="mt-2 flex justify-end gap-2">
+                                            <button
+                                                onClick={() => openEdit(item)}
+                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-indigo-300 transition-colors hover:bg-indigo-500/15"
+                                                title="Edit"
+                                            >
+                                                <Pencil size={13} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="flex h-7 w-7 items-center justify-center rounded-lg text-red-300 transition-colors hover:bg-red-500/15"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
                 </div>
             </div>
 
-            {/* LIST */}
-            <div className="space-y-2 max-w-lg mx-auto">
-                {scheduled.length === 0 && <p>No scheduled posts yet.</p>}
-
-                {scheduled.map((item) => (
-                    <div key={item.id} className="bg-gray-800 px-4 py-3 rounded flex justify-between items-center">
-                        <div>
-                            <p className="font-semibold">{item.post_caption}</p>
-                            <p className={item.status === "completed" ? "text-green-400 text-sm" : "text-yellow-400 text-sm"}>
-                                {item.status.toUpperCase()}
-                            </p>
-                        </div>
-
-                        <div className="text-right">
-                            <p className="text-gray-400 text-sm mb-2">
-                                {new Date(item.scheduled_time).toLocaleString()}
-                            </p>
-
-                            <div className="flex gap-3 justify-end">
-                                <button onClick={() => openEdit(item)} className="text-blue-400 text-sm">Edit</button>
-                                <button onClick={() => handleDelete(item.id)} className="text-red-400 text-sm">Delete</button>
+            {/* ---------- EDIT MODAL ---------- */}
+            <AnimatePresence>
+                {editId && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"
+                        onClick={cancelEdit}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.85, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="glass-strong w-full max-w-sm space-y-4 rounded-3xl p-7"
+                        >
+                            <h3 className="font-display text-lg font-bold text-white">Reschedule post</h3>
+                            <input
+                                type="datetime-local"
+                                value={editTime}
+                                onChange={(e) => setEditTime(e.target.value)}
+                                className="input-dark [color-scheme:dark]"
+                            />
+                            <div className="flex justify-end gap-3">
+                                <button onClick={cancelEdit} className="btn-ghost">Cancel</button>
+                                <button onClick={saveEdit} className="btn-gradient">Save</button>
                             </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* EDIT MODAL */}
-            {editId && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
-                    <div className="bg-gray-900 p-6 rounded shadow-lg w-80 space-y-3">
-                        <h3 className="text-xl font-bold">Edit Schedule</h3>
+            {/* ---------- LOGS DRAWER ---------- */}
+            <AnimatePresence>
+                {showLogs && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                            onClick={() => setShowLogs(false)}
+                        />
+                        <motion.aside
+                            initial={{ x: 400 }}
+                            animate={{ x: 0 }}
+                            exit={{ x: 400 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="fixed right-0 top-0 z-50 h-full w-full max-w-sm overflow-y-auto border-l border-white/10 bg-[#0b0c1d]/95 p-6 backdrop-blur-xl"
+                        >
+                            <div className="mb-5 flex items-center justify-between">
+                                <h2 className="flex items-center gap-2 font-display text-lg font-bold text-white">
+                                    <ScrollText size={18} className="text-violet-300" /> Post Logs
+                                </h2>
+                                <button
+                                    onClick={() => setShowLogs(false)}
+                                    className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
 
-                        <input type="datetime-local" value={editTime} onChange={(e) => setEditTime(e.target.value)} className="w-full p-2 rounded bg-white text-black" />
+                            {logs.length === 0 && (
+                                <p className="text-sm text-gray-500">No logs available.</p>
+                            )}
 
-                        <div className="flex justify-between">
-                            <button onClick={cancelEdit} className="px-3 py-1 bg-gray-700 rounded">Cancel</button>
-                            <button onClick={saveEdit} className="px-3 py-1 bg-blue-600 rounded">Save</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* LOG PANEL */}
-            {showLogs && (
-                <div className="fixed top-0 right-0 w-96 h-full bg-gray-900 shadow-xl p-5 overflow-y-auto">
-                    <div className="flex justify-between mb-3">
-                        <h2 className="text-xl font-bold">Post Logs</h2>
-                        <button onClick={() => setShowLogs(false)} className="text-red-400">✖</button>
-                    </div>
-
-                    {logs.length === 0 && <p>No logs available.</p>}
-
-                    {logs.map((log) => (
-                        <div key={log.id} className="border-b border-gray-700 py-2">
-                            <p className="text-sm">{log.message}</p>
-                            <p className="text-xs text-gray-500">{new Date(log.log_time).toLocaleString()}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
+                            {logs.map((log, i) => (
+                                <motion.div
+                                    key={log.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.04 }}
+                                    className="border-b border-white/[0.07] py-3"
+                                >
+                                    <p className="text-sm text-gray-200">{log.message}</p>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        {new Date(log.log_time).toLocaleString()}
+                                    </p>
+                                </motion.div>
+                            ))}
+                        </motion.aside>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
-
-
-

@@ -1,7 +1,13 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import { Zap, User, Mail, Lock, UserPlus } from "lucide-react";
 
 export default function Register() {
     const [form, setForm] = useState({ username: "", email: "", password: "" });
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -9,66 +15,111 @@ export default function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/accounts/register/`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
-            }
-        );
-        const data = await response.json();
-        console.log(data);
-        alert("Registered successfully!");
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_API_BASE_URL}/accounts/register/`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(form),
+                }
+            );
+
+            if (!response.ok) throw new Error("Registration failed");
+
+            toast.success("Account created! Please log in.");
+            navigate("/login");
+        } catch (err) {
+            console.error(err);
+            toast.error("Registration failed. Try a different username.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-blue-100">
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-lg shadow-md w-96 space-y-4"
+        <div className="flex min-h-screen items-center justify-center px-6 pt-24 pb-10">
+            <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="glass-strong w-full max-w-md rounded-3xl p-8 shadow-glow"
             >
-                <h2 className="text-2xl font-bold text-center text-gray-800">
-                    Register
-                </h2>
+                <div className="mb-8 text-center">
+                    <motion.div
+                        initial={{ rotate: 12, scale: 0 }}
+                        animate={{ rotate: 0, scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.15 }}
+                        className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 shadow-glow-sm"
+                    >
+                        <Zap size={24} className="text-white" fill="currentColor" />
+                    </motion.div>
+                    <h1 className="font-display text-2xl font-bold text-white">Create your account</h1>
+                    <p className="mt-1.5 text-sm text-gray-400">
+                        Start cross-posting in under a minute
+                    </p>
+                </div>
 
-                <input
-                    type="text"
-                    name="username"
-                    placeholder="Username"
-                    value={form.username}
-                    onChange={handleChange}
-                    className="w-full border rounded p-2 text-black placeholder-gray-500"
-                    required
-                />
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="relative">
+                        <User size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Username"
+                            value={form.username}
+                            onChange={handleChange}
+                            className="input-dark pl-11"
+                            required
+                        />
+                    </div>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="w-full border rounded p-2 text-black placeholder-gray-500"
-                    required
-                />
+                    <div className="relative">
+                        <Mail size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={form.email}
+                            onChange={handleChange}
+                            className="input-dark pl-11"
+                            required
+                        />
+                    </div>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    value={form.password}
-                    onChange={handleChange}
-                    className="w-full border rounded p-2 text-black placeholder-gray-500"
-                    required
-                />
+                    <div className="relative">
+                        <Lock size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            value={form.password}
+                            onChange={handleChange}
+                            className="input-dark pl-11"
+                            required
+                        />
+                    </div>
 
-                <button
-                    type="submit"
-                    className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-all"
-                >
-                    Register
-                </button>
-            </form>
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        disabled={loading}
+                        className="btn-gradient w-full"
+                    >
+                        <UserPlus size={17} />
+                        {loading ? "Creating account..." : "Register"}
+                    </motion.button>
+                </form>
+
+                <p className="mt-6 text-center text-sm text-gray-400">
+                    Already have an account?{" "}
+                    <Link to="/login" className="font-medium text-violet-300 transition-colors hover:text-violet-200">
+                        Log in
+                    </Link>
+                </p>
+            </motion.div>
         </div>
     );
 }

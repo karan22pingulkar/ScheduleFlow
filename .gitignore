@@ -32,3 +32,4 @@ frontend/*.log
 .DS_Store
 *.swp
 *.swo
+.devinignore

@@ -1,5 +1,20 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+import {
+    Plus,
+    Search,
+    Pencil,
+    Trash2,
+    RefreshCw,
+    FileText,
+    ImageIcon,
+    X,
+    Send,
+    LogOut,
+} from "lucide-react";
+
+const BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function Dashboard() {
     const [user, setUser] = useState(null);
@@ -26,20 +41,16 @@ export default function Dashboard() {
 
         const fetchProfile = async () => {
             try {
-                const res = await fetch(
-                    `${import.meta.env.VITE_API_BASE_URL}/accounts/profile/`,
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const res = await fetch(`${BASE}/accounts/profile/`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
                 if (!res.ok) throw new Error("Failed to fetch profile");
 
                 const data = await res.json();
-                console.log("Profile data:", data);
                 setUser({ ...data, username: data.user?.username });
             } catch (err) {
                 console.error(err);
@@ -57,14 +68,13 @@ export default function Dashboard() {
         setLoadingPosts(true);
         setError("");
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/`, {
+            const res = await fetch(`${BASE}/posts/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
             if (!res.ok) throw new Error(`Failed to fetch posts: ${res.status}`);
 
             const data = await res.json();
-            console.log("Posts data:", data);
             setPosts(data);
             setFilteredPosts(data);
         } catch (err) {
@@ -74,6 +84,12 @@ export default function Dashboard() {
             setLoadingPosts(false);
         }
     };
+
+    // Auto-load posts once the profile resolves
+    useEffect(() => {
+        if (token) loadPosts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token]);
 
     // Search posts by ID
     const handleSearch = (e) => {
@@ -95,19 +111,23 @@ export default function Dashboard() {
         }
     };
 
+    const resetForm = () => {
+        setNewCaption("");
+        setNewImage(null);
+        setImagePreview(null);
+    };
+
     // Add new post
     const handleAddPost = async (e) => {
         e.preventDefault();
-        if (!newCaption) return alert("Caption is required");
+        if (!newCaption) return toast.error("Caption is required");
 
         try {
             const formData = new FormData();
             formData.append("caption", newCaption);
             if (newImage) formData.append("image", newImage);
 
-            console.log("Sending post data:", newCaption, newImage);
-
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/`, {
+            const res = await fetch(`${BASE}/posts/`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` },
                 body: formData,
@@ -116,18 +136,16 @@ export default function Dashboard() {
             if (!res.ok) throw new Error(`Failed to create post: ${res.status}`);
 
             const data = await res.json();
-            console.log("Created post response:", data);
 
             const updatedPosts = [data, ...posts];
             setPosts(updatedPosts);
             setFilteredPosts(updatedPosts);
-            setNewCaption("");
-            setNewImage(null);
-            setImagePreview(null);
+            resetForm();
             setShowAddModal(false);
+            toast.success("Post created!");
         } catch (err) {
             console.error(err);
-            alert(`Could not create post: ${err.message}`);
+            toast.error(`Could not create post: ${err.message}`);
         }
     };
 
@@ -136,7 +154,7 @@ export default function Dashboard() {
         if (!confirm("Are you sure you want to delete this post?")) return;
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/`, {
+            const res = await fetch(`${BASE}/posts/${postId}/`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -146,9 +164,10 @@ export default function Dashboard() {
             const updatedPosts = posts.filter((post) => post.id !== postId);
             setPosts(updatedPosts);
             setFilteredPosts(updatedPosts);
+            toast.success("Post deleted");
         } catch (err) {
             console.error(err);
-            alert("Could not delete post");
+            toast.error("Could not delete post");
         }
     };
 
@@ -164,26 +183,22 @@ export default function Dashboard() {
     // Update post
     const handleEditPost = async (e) => {
         e.preventDefault();
-        if (!newCaption) return alert("Caption is required");
+        if (!newCaption) return toast.error("Caption is required");
 
         try {
             const formData = new FormData();
             formData.append("caption", newCaption);
             if (newImage) formData.append("image", newImage);
 
-            const res = await fetch(
-                `${import.meta.env.VITE_API_BASE_URL}/posts/${currentPost.id}/`,
-                {
-                    method: "PUT",
-                    headers: { Authorization: `Bearer ${token}` },
-                    body: formData,
-                }
-            );
+            const res = await fetch(`${BASE}/posts/${currentPost.id}/`, {
+                method: "PUT",
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
 
             if (!res.ok) throw new Error("Failed to update post");
 
             const updatedPost = await res.json();
-            console.log("Updated post:", updatedPost);
 
             const updatedPosts = posts.map((p) =>
                 p.id === updatedPost.id ? updatedPost : p
@@ -192,261 +207,286 @@ export default function Dashboard() {
             setFilteredPosts(updatedPosts);
             setShowEditModal(false);
             setCurrentPost(null);
-            setNewCaption("");
-            setNewImage(null);
-            setImagePreview(null);
+            resetForm();
+            toast.success("Post updated!");
         } catch (err) {
             console.error(err);
-            alert("Could not update post");
+            toast.error("Could not update post");
         }
     };
 
-    // Debug: log filtered posts whenever they change
-    useEffect(() => {
-        console.log("Filtered posts state:", filteredPosts);
-    }, [filteredPosts]);
+    if (loadingProfile)
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-violet-400 border-t-transparent" />
+            </div>
+        );
 
-    if (loadingProfile) return <p className="text-center mt-20">Loading profile...</p>;
-    if (error) return <p className="text-center mt-20 text-red-500">{error}</p>;
+    if (error && !posts.length)
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
+                <p className="glass rounded-2xl px-6 py-4 text-red-300">{error}</p>
+                <button onClick={loadPosts} className="btn-ghost">
+                    <RefreshCw size={15} /> Retry
+                </button>
+            </div>
+        );
 
     return (
-        <div
-            className="min-h-screen bg-cover bg-center flex flex-col items-center px-4 py-10"
-            style={{ backgroundImage: "url('YOUR_BACKGROUND_IMAGE_URL_HERE')" }}
-        >
-            {/* Profile Card */}
-            {/* <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="bg-white bg-opacity-80 backdrop-blur-md p-8 rounded-xl shadow-lg w-full max-w-md text-center"
-            > */}
-            <h1 className="text-3xl font-bold mb-2">🎉Welcome {user?.username} 🎉</h1>
-            <p className="text-gray-700 mb-4">{user?.email}</p>
+        <div className="min-h-screen px-6 pt-28 pb-24">
+            <div className="mx-auto max-w-5xl">
+                {/* ---------- HEADER ---------- */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex flex-wrap items-center justify-between gap-4"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 font-display text-xl font-bold text-white shadow-glow-sm">
+                            {user?.username?.[0]?.toUpperCase() || "?"}
+                        </div>
+                        <div>
+                            <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
+                                Hey, {user?.username}
+                            </h1>
+                            <p className="text-sm text-gray-400">{user?.email}</p>
+                        </div>
+                    </div>
 
-            {/* <button
-                onClick={loadPosts}
-                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-                {loadingPosts ? "Loading..." : "Load My Posts"}
-            </button> */}
-            {/* </motion.div> */}
+                    <div className="glass flex items-center gap-5 rounded-2xl px-5 py-3">
+                        <div className="text-center">
+                            <p className="font-display text-xl font-bold text-white">{posts.length}</p>
+                            <p className="text-[11px] uppercase tracking-wider text-gray-500">Posts</p>
+                        </div>
+                        <div className="h-8 w-px bg-white/10" />
+                        <div className="text-center">
+                            <p className="font-display text-xl font-bold text-violet-300">
+                                {filteredPosts.length}
+                            </p>
+                            <p className="text-[11px] uppercase tracking-wider text-gray-500">Shown</p>
+                        </div>
+                    </div>
+                </motion.div>
 
-            {/* Search Bar */}
-            <div className="mt-6 w-full max-w-xl">
-                <input
-                    type="text"
-                    value={searchId}
-                    onChange={handleSearch}
-                    placeholder="Search post by ID"
-                    className="w-full border rounded p-2 text-black"
-                />
+                {/* ---------- TOOLBAR ---------- */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="mt-8 flex flex-wrap items-center gap-3"
+                >
+                    <div className="relative flex-1 min-w-[220px]">
+                        <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                        <input
+                            type="text"
+                            value={searchId}
+                            onChange={handleSearch}
+                            placeholder="Search post by ID..."
+                            className="input-dark pl-11"
+                        />
+                    </div>
+                    <button onClick={loadPosts} className="btn-ghost">
+                        <RefreshCw size={15} className={loadingPosts ? "animate-spin" : ""} />
+                        {loadingPosts ? "Loading..." : "Refresh"}
+                    </button>
+                    <button onClick={() => setShowAddModal(true)} className="btn-gradient">
+                        <Plus size={16} /> New Post
+                    </button>
+                </motion.div>
 
+                {/* ---------- POSTS GRID ---------- */}
+                <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                    <AnimatePresence>
+                        {!loadingPosts && filteredPosts.length === 0 && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="glass col-span-full flex flex-col items-center gap-3 rounded-3xl py-16 text-center"
+                            >
+                                <FileText size={36} className="text-gray-600" />
+                                <p className="text-gray-400">No posts yet. Create your first one!</p>
+                                <button onClick={() => setShowAddModal(true)} className="btn-gradient mt-2">
+                                    <Plus size={16} /> New Post
+                                </button>
+                            </motion.div>
+                        )}
 
+                        {filteredPosts.map((post, i) => (
+                            <motion.article
+                                key={post.id}
+                                layout
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.4) }}
+                                whileHover={{ y: -4 }}
+                                className="glass group relative overflow-hidden rounded-3xl p-5 transition-colors hover:border-violet-400/30"
+                            >
+                                {post.image ? (
+                                    <img
+                                        src={post.image}
+                                        alt="Post"
+                                        className="mb-4 h-44 w-full rounded-2xl object-cover"
+                                    />
+                                ) : (
+                                    <div className="mb-4 flex h-32 w-full items-center justify-center rounded-2xl bg-white/[0.03]">
+                                        <ImageIcon size={28} className="text-gray-600" />
+                                    </div>
+                                )}
+
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                                    #{post.id} • by {post.username}
+                                </p>
+                                <p className="mt-1.5 font-medium leading-snug text-gray-100">
+                                    {post.caption}
+                                </p>
+                                <p className="mt-3 text-xs text-gray-500">
+                                    {new Date(post.created_at).toLocaleString()}
+                                </p>
+
+                                <div className="absolute right-3 top-3 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                    <button
+                                        onClick={() => openEditModal(post)}
+                                        className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-[#12121f]/80 text-amber-300 backdrop-blur-md transition-colors hover:bg-amber-500/20"
+                                        title="Edit"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(post.id)}
+                                        className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-[#12121f]/80 text-red-300 backdrop-blur-md transition-colors hover:bg-red-500/20"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            </motion.article>
+                        ))}
+                    </AnimatePresence>
+                </div>
             </div>
-            <button
-                onClick={loadPosts}
-                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-                {loadingPosts ? "Loading..." : "Load My Posts"}
-            </button>
 
-            {/* Posts Section */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
-                className="mt-8 w-full max-w-xl space-y-4"
-            >
-                {loadingPosts && <p className="text-center text-white-700">Fetching posts...</p>}
-
-                {!loadingPosts && filteredPosts.length === 0 && (
-                    <p className="text-center text-white-600 text-lg">No posts found.</p>
-                )}
-
-                {filteredPosts.map((post) => (
-                    <motion.div
-                        key={post.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="bg-white bg-opacity-90 backdrop-blur-md p-4 rounded-lg shadow-md relative"
-                    >
-                        <p className="text-gray-500 text-xs">ID: {post.id}</p>
-                        <p className="text-gray-600 text-sm mb-1">Posted by: {post.username}</p>
-                        <p className="font-semibold text-gray-800 mb-2">{post.caption}</p>
-                        {post.image && (
-                            <img
-                                src={post.image}
-                                alt="Post"
-                                className="rounded max-w-full h-auto mb-2"
-                            />
-                        )}
-                        <p className="text-gray-500 text-xs">
-                            Created at: {new Date(post.created_at).toLocaleString()}
-                        </p>
-
-                        {/* Edit & Delete Buttons */}
-                        <div className="absolute top-2 right-2 flex gap-2">
-                            <button
-                                onClick={() => openEditModal(post)}
-                                className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                onClick={() => handleDelete(post.id)}
-                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </motion.div>
-                ))}
-            </motion.div>
-
-            {/* Floating Add Post Button */}
-            <button
-                onClick={() => setShowAddModal(true)}
-                className="fixed bottom-10 right-10 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-700 transition-all"
-            >
-                + Add Post
-            </button>
-
-            {/* Add Post Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <motion.form
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.3 }}
-                        onSubmit={handleAddPost}
-                        className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md space-y-4 text-black"
-                    >
-                        <h2 className="text-2xl font-bold text-center">Create New Post</h2>
-
-                        <input
-                            type="text"
-                            placeholder="Caption"
-                            value={newCaption}
-                            onChange={(e) => setNewCaption(e.target.value)}
-                            className="w-full border rounded p-2 text-black"
-                            required
-                        />
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="w-full border rounded p-2 text-black"
-                        />
-
-                        {imagePreview && (
-                            <img
-                                src={imagePreview}
-                                alt="Preview"
-                                className="mt-2 max-w-full rounded shadow-sm"
-                            />
-                        )}
-
-                        <div className="flex justify-between mt-4">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setShowAddModal(false);
-                                    setNewCaption("");
-                                    setNewImage(null);
-                                    setImagePreview(null);
-                                }}
-                                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-all"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-all"
-                            >
-                                Post
-                            </button>
-                        </div>
-                    </motion.form>
-                </div>
-            )}
-
-            {/* Edit Post Modal */}
-            {showEditModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <motion.form
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.3 }}
-                        onSubmit={handleEditPost}
-                        className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md space-y-4 text-black"
-                    >
-                        <h2 className="text-2xl font-bold text-center">Edit Post</h2>
-
-                        <input
-                            type="text"
-                            placeholder="Caption"
-                            value={newCaption}
-                            onChange={(e) => setNewCaption(e.target.value)}
-                            className="w-full border rounded p-2 text-black"
-                            required
-                        />
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="w-full border rounded p-2 text-black"
-                        />
-
-                        {imagePreview && (
-                            <img
-                                src={imagePreview}
-                                alt="Preview"
-                                className="mt-2 max-w-full rounded shadow-sm"
-                            />
-                        )}
-
-                        <div className="flex justify-between mt-4">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setShowEditModal(false);
-                                    setCurrentPost(null);
-                                    setNewCaption("");
-                                    setNewImage(null);
-                                    setImagePreview(null);
-                                }}
-                                className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-all"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-all"
-                            >
-                                Update
-                            </button>
-                        </div>
-                    </motion.form>
-                </div>
-            )}
-
-            {/* Logout Button */}
+            {/* ---------- FAB ---------- */}
             <motion.button
-                onClick={() => {
-                    localStorage.removeItem("accessToken");
-                    localStorage.removeItem("refreshToken");
-                    window.location.href = "/login";
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="mt-10 px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-all"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: "spring", stiffness: 260, damping: 18 }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => setShowAddModal(true)}
+                className="fixed bottom-8 right-8 z-30 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-glow"
+                title="New post"
             >
-                Logout
+                <Plus size={24} />
             </motion.button>
+
+            {/* ---------- POST MODAL (add + edit) ---------- */}
+            <AnimatePresence>
+                {(showAddModal || showEditModal) && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"
+                        onClick={() => {
+                            setShowAddModal(false);
+                            setShowEditModal(false);
+                            setCurrentPost(null);
+                            resetForm();
+                        }}
+                    >
+                        <motion.form
+                            initial={{ scale: 0.85, opacity: 0, y: 30 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            onSubmit={showEditModal ? handleEditPost : handleAddPost}
+                            onClick={(e) => e.stopPropagation()}
+                            className="glass-strong w-full max-w-md space-y-4 rounded-3xl p-7 shadow-glow"
+                        >
+                            <div className="flex items-center justify-between">
+                                <h2 className="font-display text-xl font-bold text-white">
+                                    {showEditModal ? "Edit Post" : "Create New Post"}
+                                </h2>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowAddModal(false);
+                                        setShowEditModal(false);
+                                        setCurrentPost(null);
+                                        resetForm();
+                                    }}
+                                    className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            <textarea
+                                placeholder="What's happening?"
+                                value={newCaption}
+                                onChange={(e) => setNewCaption(e.target.value)}
+                                rows={3}
+                                className="input-dark resize-none"
+                                required
+                            />
+
+                            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-3 text-sm text-gray-400 transition-colors hover:border-violet-400/40 hover:text-gray-200">
+                                <ImageIcon size={17} />
+                                {newImage ? newImage.name : "Attach an image"}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+                            </label>
+
+                            {imagePreview && (
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="max-h-52 w-full rounded-2xl object-cover"
+                                />
+                            )}
+
+                            <div className="flex justify-end gap-3 pt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowAddModal(false);
+                                        setShowEditModal(false);
+                                        setCurrentPost(null);
+                                        resetForm();
+                                    }}
+                                    className="btn-ghost"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-gradient">
+                                    <Send size={15} />
+                                    {showEditModal ? "Update" : "Post"}
+                                </button>
+                            </div>
+                        </motion.form>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ---------- LOGOUT ---------- */}
+            <div className="mt-16 flex justify-center">
+                <button
+                    onClick={() => {
+                        localStorage.removeItem("accessToken");
+                        localStorage.removeItem("refreshToken");
+                        window.location.href = "/login";
+                    }}
+                    className="btn-ghost text-red-300 hover:bg-red-500/10"
+                >
+                    <LogOut size={15} /> Logout
+                </button>
+            </div>
         </div>
     );
 }

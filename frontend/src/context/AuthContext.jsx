@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- context file exports provider + hook by design */
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
