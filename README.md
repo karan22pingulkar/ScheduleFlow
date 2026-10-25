@@ -1,20 +1,55 @@
 # ScheduleFlow 🚀
-Social Cross-Posting POC — Django REST + React (Vite) with Celery & Redis
+Social Cross-Posting POC — Django REST + React (Vite), deployed 100% free.
 
-A full-stack proof-of-concept showcasing modern auth, background scheduling, and clean API integrations. The backend uses Django REST Framework with JWT authentication, modular apps, and Celery + Redis for reliable background jobs (post scheduling, analytics fetching). The frontend is a React (Vite) app with protected routes, AuthContext, and a responsive Tailwind UI.
+A full-stack proof-of-concept showcasing JWT auth, scheduled cross-posting, and a polished dark UI. Write a post once, pick your platforms and a time — a lightweight in-process scheduler publishes it and logs the result. No message broker, no paid services.
 
-Key capabilities include user-linked social accounts, post creation, scheduled posting orchestrated by Celery Beat (scheduler) and executed by a Celery Worker, with Redis as the message broker. Each scheduled run is recorded in Post Logs for observability. The system is designed for a free-tier friendly deployment stack (Vercel + Render/Railway + Neon + Cloudinary + Upstash/Render Redis).
+## Highlights
 
-Highlights
+- 🔐 **JWT Auth Flow** — register, login, refresh; protected APIs & routes.
+- 🎨 **Animated UI** — React 19 + Tailwind + Framer Motion: glassmorphism cards, aurora background with floating social icons.
+- 🔗 **Social Accounts** — connect & manage platform credentials (IG / LinkedIn / X / FB).
+- 📝 **Posts CRUD** — create/edit/delete posts with Cloudinary image uploads.
+- ⏰ **Scheduling** — in-process scheduler thread polls every 30s, atomically claims due posts, flips `pending → success` and writes a **PostLog** entry (replaces the old Celery + Redis pipeline — same behavior, zero broker).
+- 📜 **Post Logs** — every scheduled run is recorded and visible in the app's logs drawer.
 
-🔐 JWT Auth Flow: Register, login, refresh; protected APIs & routes.
+## Stack
 
-🧩 React + Tailwind: Clean UI, protected pages, API error handling.
+| Layer | Tech | Hosting (free tier) |
+|---|---|---|
+| Frontend | React 19, Vite, Tailwind, Framer Motion | **Vercel** |
+| API | Django 5, DRF, SimpleJWT, Gunicorn | **Render** web service |
+| Scheduler | In-process daemon thread (`posts/scheduler.py`) | runs inside the web service |
+| Database | PostgreSQL | **Neon** serverless |
+| Media | Image uploads | **Cloudinary** |
+| Keep-alive | `GET /health/` every 5 min | **UptimeRobot** |
 
-🔗 Social Accounts: Connect & manage platform credentials.
+## Local dev
 
-📝 Posts CRUD: Create/update/delete posts; image upload ready.
+```bash
+# backend/.env
+SECRET_KEY=...
+DATABASE_URL=postgres://...        # Neon
+ALLOWED_HOSTS=127.0.0.1,localhost
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+USE_REDIS_CACHE=false              # locmem cache, no Redis needed
+ENABLE_INLINE_SCHEDULER=true       # starts the publisher thread
 
-⏰ Scheduling Engine: Celery Beat schedules, Celery Worker runs jobs, Redis brokers tasks.
+cd backend && env/Scripts/python manage.py runserver
 
-🚀 Deployment-Ready: Vercel (frontend) • Render/Railway (API & workers) • Neon (DB) • Cloudinary (media) • Upstash/Render (Redis).
+# frontend/.env
+VITE_API_BASE_URL=http://127.0.0.1:8000/api
+
+cd frontend && npm run dev
+```
+
+## Deploy notes
+
+- **Render env vars**: same as above (set `USE_REDIS_CACHE=false`, `ENABLE_INLINE_SCHEDULER=true`).
+- **UptimeRobot**: HTTPS monitor → `https://<your-app>.onrender.com/health/` at 5-min interval keeps the free web service awake 24/7.
+- Celery + Upstash were removed: the scheduler thread covers the POC's needs. The old `posts/tasks.py`/`celery.py` remain in the repo if a real broker is ever added back.
+
+---
+
+Made by **karanthedon**

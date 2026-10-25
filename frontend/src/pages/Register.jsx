@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Zap, User, Mail, Lock, UserPlus } from "lucide-react";
+import { Share2, User, Mail, Lock, UserPlus } from "lucide-react";
 
 export default function Register() {
     const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -54,7 +54,7 @@ export default function Register() {
                         transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.15 }}
                         className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 shadow-glow-sm"
                     >
-                        <Zap size={24} className="text-white" fill="currentColor" />
+                        <Share2 size={24} className="text-white" />
                     </motion.div>
                     <h1 className="font-display text-2xl font-bold text-white">Create your account</h1>
                     <p className="mt-1.5 text-sm text-gray-400">
