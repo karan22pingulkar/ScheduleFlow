@@ -48,7 +48,6 @@ cd frontend && npm run dev
 
 - **Render env vars**: same as above (set `USE_REDIS_CACHE=false`, `ENABLE_INLINE_SCHEDULER=true`).
 - **UptimeRobot**: HTTPS monitor → `https://<your-app>.onrender.com/health/` at 5-min interval keeps the free web service awake 24/7.
-- Celery + Upstash were removed: the scheduler thread covers the POC's needs. The old `posts/tasks.py`/`celery.py` remain in the repo if a real broker is ever added back.
 
 ---
 

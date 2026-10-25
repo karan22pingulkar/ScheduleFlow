@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, CalendarClock, Share2, Home, LogOut, Menu, X, LogIn, UserPlus } from "lucide-react";
+import Logo from "./Logo";
 
 export default function Navbar() {
     const navigate = useNavigate();
@@ -36,9 +37,7 @@ export default function Navbar() {
         >
             <nav className="mx-4 mt-4 flex max-w-6xl items-center justify-between rounded-2xl border border-white/10 bg-[#0b0c1d]/70 px-4 py-3 backdrop-blur-xl sm:mx-auto sm:px-6">
                 <Link to="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 shadow-glow-sm">
-                        <Share2 size={18} className="text-white" />
-                    </span>
+                    <Logo size={36} className="shadow-glow-sm" />
                     <span className="font-display text-lg font-bold tracking-tight text-white">
                         Schedule<span className="text-gradient">Flow</span>
                     </span>

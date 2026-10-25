@@ -280,10 +280,13 @@ export default function Home() {
                     </div>
                 </motion.div>
 
-                <p className="mt-14 flex items-center justify-center gap-1.5 text-center text-xs text-gray-600">
-                    Made with <Heart size={11} className="inline fill-red-400 text-red-400" /> by{" "}
-                    <span className="font-semibold text-gradient">karanthedon</span>
-                </p>
+                <div className="mt-14 text-center text-xs text-gray-600">
+                    <p>ScheduleFlow — social cross-posting POC • Django REST + React + Neon + Cloudinary</p>
+                    <p className="mt-1.5 flex items-center justify-center gap-1.5">
+                        Made with <Heart size={11} className="inline fill-red-400 text-red-400" /> by{" "}
+                        <span className="font-semibold text-gradient">karanthedon</span>
+                    </p>
+                </div>
             </div>
         </div>
     );

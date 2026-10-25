@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Share2, User, Mail, Lock, UserPlus } from "lucide-react";
+import { User, Mail, Lock, UserPlus } from "lucide-react";
+import Logo from "../components/Logo";
 
 export default function Register() {
     const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -52,9 +53,9 @@ export default function Register() {
                         initial={{ rotate: 12, scale: 0 }}
                         animate={{ rotate: 0, scale: 1 }}
                         transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.15 }}
-                        className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 shadow-glow-sm"
+                        className="mx-auto mb-4 w-fit"
                     >
-                        <Share2 size={24} className="text-white" />
+                        <Logo size={56} className="shadow-glow-sm" />
                     </motion.div>
                     <h1 className="font-display text-2xl font-bold text-white">Create your account</h1>
                     <p className="mt-1.5 text-sm text-gray-400">
