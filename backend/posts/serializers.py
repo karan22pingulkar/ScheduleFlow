@@ -51,8 +51,8 @@ class ScheduledPostSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        ✅ Ensure scheduled time is future
-        ✅ Ensure post belongs to requesting user
+        Ensure scheduled time is in the future
+        and the post belongs to the requesting user.
         """
         request = self.context.get('request')
 
