@@ -15,6 +15,7 @@ import {
     FileText,
     Link2,
 } from "lucide-react";
+import { friendlyError } from "../services/api";
 
 const STATUS_STYLE = {
     completed: { icon: CheckCircle2, cls: "text-emerald-300 bg-emerald-500/10 border-emerald-400/20" },
@@ -58,8 +59,8 @@ export default function SchedulePost() {
 
             setPosts(await postRes.json());
             setAccounts(await accRes.json());
-        } catch {
-            toast.error("Failed to load posts or accounts.");
+        } catch (err) {
+            toast.error(friendlyError(err, "Failed to load posts or accounts."));
         }
     };
 
@@ -69,8 +70,8 @@ export default function SchedulePost() {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
             setScheduled(await res.json());
-        } catch {
-            toast.error("Failed to load scheduled posts.");
+        } catch (err) {
+            toast.error(friendlyError(err, "Failed to load scheduled posts."));
         }
     };
 
@@ -81,8 +82,8 @@ export default function SchedulePost() {
             });
             setLogs(await res.json());
             setShowLogs(true);
-        } catch {
-            toast.error("Failed to fetch logs.");
+        } catch (err) {
+            toast.error(friendlyError(err, "Failed to fetch logs."));
         }
     };
 
@@ -114,8 +115,8 @@ export default function SchedulePost() {
             setSelectedAccount("");
             setScheduleTime("");
             fetchScheduled();
-        } catch {
-            toast.error("Something went wrong.");
+        } catch (err) {
+            toast.error(friendlyError(err, "Something went wrong."));
         }
     };
 
@@ -151,8 +152,8 @@ export default function SchedulePost() {
             toast.success("Rescheduled!");
             cancelEdit();
             fetchScheduled();
-        } catch {
-            toast.error("Update failed.");
+        } catch (err) {
+            toast.error(friendlyError(err, "Update failed."));
         }
     };
 
@@ -164,8 +165,8 @@ export default function SchedulePost() {
             });
             toast.success("Deleted!");
             fetchScheduled();
-        } catch {
-            toast.error("Delete failed.");
+        } catch (err) {
+            toast.error(friendlyError(err, "Delete failed."));
         }
     };
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { Share2, Pencil, Trash2, Plus, KeyRound, AtSign, Link2 } from "lucide-react";
 import { getPlatformMeta, PLATFORM_META } from "../utils/platforms";
+import { friendlyError } from "../services/api";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/accounts/social-accounts/`;
 
@@ -29,8 +30,8 @@ export default function SocialAccounts() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setAccounts(response.data);
-        } catch {
-            toast.error("Failed to load accounts");
+        } catch (err) {
+            toast.error(friendlyError(err, "Failed to load accounts"));
         }
         setLoading(false);
     };
@@ -58,8 +59,8 @@ export default function SocialAccounts() {
             setAccessToken("");
             setEditId(null);
             fetchAccounts();
-        } catch {
-            toast.error("Error saving account");
+        } catch (err) {
+            toast.error(friendlyError(err, "Error saving account"));
         }
         setLoading(false);
     };
@@ -72,8 +73,8 @@ export default function SocialAccounts() {
             });
             toast.success("Deleted");
             fetchAccounts();
-        } catch {
-            toast.error("Delete failed");
+        } catch (err) {
+            toast.error(friendlyError(err, "Delete failed"));
         }
         setLoading(false);
     };

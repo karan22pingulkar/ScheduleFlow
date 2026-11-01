@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { User, Lock, LogIn } from "lucide-react";
 import Logo from "../components/Logo";
+import { friendlyError } from "../services/api";
 
 export default function Login() {
     const [form, setForm] = useState({ username: "", password: "" });
@@ -39,7 +40,7 @@ export default function Login() {
             navigate("/dashboard");
         } catch (err) {
             console.error(err);
-            toast.error("Invalid username or password");
+            toast.error(friendlyError(err, "Invalid username or password"));
         } finally {
             setLoading(false);
         }

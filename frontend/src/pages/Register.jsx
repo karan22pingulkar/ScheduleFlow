@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { User, Mail, Lock, UserPlus } from "lucide-react";
 import Logo from "../components/Logo";
+import { friendlyError } from "../services/api";
 
 export default function Register() {
     const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -34,7 +35,9 @@ export default function Register() {
             navigate("/login");
         } catch (err) {
             console.error(err);
-            toast.error("Registration failed. Try a different username.");
+            toast.error(
+                friendlyError(err, "Registration failed. Try a different username.")
+            );
         } finally {
             setLoading(false);
         }

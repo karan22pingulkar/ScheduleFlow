@@ -13,6 +13,7 @@ import {
     Send,
     LogOut,
 } from "lucide-react";
+import { friendlyError } from "../services/api";
 
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -54,7 +55,7 @@ export default function Dashboard() {
                 setUser({ ...data, username: data.user?.username });
             } catch (err) {
                 console.error(err);
-                setError("Could not fetch profile");
+                setError(friendlyError(err, "Could not fetch profile"));
             } finally {
                 setLoadingProfile(false);
             }
@@ -79,7 +80,7 @@ export default function Dashboard() {
             setFilteredPosts(data);
         } catch (err) {
             console.error(err);
-            setError(`Could not fetch posts: ${err.message}`);
+            setError(friendlyError(err, "Could not fetch posts"));
         } finally {
             setLoadingPosts(false);
         }
@@ -145,7 +146,7 @@ export default function Dashboard() {
             toast.success("Post created!");
         } catch (err) {
             console.error(err);
-            toast.error(`Could not create post: ${err.message}`);
+            toast.error(friendlyError(err, "Could not create post"));
         }
     };
 
@@ -167,7 +168,7 @@ export default function Dashboard() {
             toast.success("Post deleted");
         } catch (err) {
             console.error(err);
-            toast.error("Could not delete post");
+            toast.error(friendlyError(err, "Could not delete post"));
         }
     };
 
@@ -211,7 +212,7 @@ export default function Dashboard() {
             toast.success("Post updated!");
         } catch (err) {
             console.error(err);
-            toast.error("Could not update post");
+            toast.error(friendlyError(err, "Could not update post"));
         }
     };
 
